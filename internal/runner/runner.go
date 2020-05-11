@@ -77,14 +77,21 @@ func (v *commandExecutor) VisitBefore(cmd *command.Command) command.VisitorRetur
 func (v *commandExecutor) VisitAfter(cmd *command.Command) error {
 	if cmd.Handler != nil {
 		logger := log.NewLogger(v.newLogDelegate(cmd.Name))
-		in := utils.NewStructFrom(cmd.Input)
-		utils.FromMapToStruct(v.values, in)
-		out := utils.NewStructFrom(cmd.Output)
+		var in, out interface{}
+		if cmd.Input != nil {
+			in = utils.NewStructFrom(cmd.Input)
+			utils.FromMapToStruct(v.values, in)
+		}
+		if cmd.Output != nil {
+			out = utils.NewStructFrom(cmd.Output)
+		}
 		err := cmd.Handler(v.rt, logger, in, out)
 		if err != nil {
 			return err
 		}
-		utils.FromStructToMap(out, v.values)
+		if out != nil {
+			utils.FromStructToMap(out, v.values)
+		}
 	}
 	v.listener.OnAfterCommand(v.rt, v.listenerLogger, cmd.Name, v.values)
 	return nil
