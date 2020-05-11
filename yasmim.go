@@ -8,10 +8,21 @@ import (
 	"github.com/tsouza/yasmim/pkg/option"
 )
 
-func Commands(f command.Builder, s ...command.Builder) Runner {
-	seq := append([]command.Builder{ f }, s...)
+var commands []command.Builder
+
+func Register(builder command.Builder) {
+	commands = append(commands, builder)
+}
+
+func newRunner(seq ...command.Builder) Runner {
 	cmds := command.NewMap(seq...)
 	return &builder{&option.Configuration{}, cmds }
+}
+
+func New() Runner {
+	cmds := commands
+	commands = nil
+	return newRunner(cmds...)
 }
 
 type Runner interface {

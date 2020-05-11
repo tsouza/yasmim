@@ -15,7 +15,7 @@ func TestCommands_Simple(t *testing.T) {
 	input := testInputType{ "input" }
 	output := testOutputType{}
 
-	err := Commands(
+	err := newRunner(
 		func(define command.Define) {
 			define.Command("test").
 				Input(testInputType{}).
@@ -48,7 +48,7 @@ func TestCommands_Filters(t *testing.T) {
 	input := testType{}
 	output := testType{}
 
-	err := Commands(
+	err := newRunner(
 		func(define command.Define) {
 			define.Command("test-1").
 				Input(testType{}).
