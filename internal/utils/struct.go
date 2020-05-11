@@ -7,7 +7,14 @@ import (
 )
 
 func FromStructToMap(from interface{}, to map[string]interface{}) {
-	structs.FillMap(from, to)
+	fromValue := reflect.ValueOf(from)
+	if fromValue.Kind() == reflect.Ptr {
+		fromValue = fromValue.Elem()
+	}
+	for _, name := range structs.Names(from) {
+		fValue := fromValue.FieldByName(name)
+		to[name] = fValue.Interface()
+	}
 }
 
 func FromMapToStruct(from map[string]interface{}, to interface{}) {
