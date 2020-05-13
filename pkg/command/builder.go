@@ -2,7 +2,6 @@ package command
 
 import (
 	"fmt"
-	"github.com/tsouza/yasmim/internal/utils"
 	"strings"
 )
 
@@ -10,13 +9,14 @@ type Define interface {
 	Command(string) 		Define
 	Input(interface{}) 		Define
 	Output(interface{}) 	Define
-	Dependencies(...string) Define
+	Dependencies(...interface{}) Define
 	Handler(Handler) 		Define
-	OnBefore(Hook)		Define
-	OnAfter(Hook)		Define
+	OnBefore(Hook)			Define
+	OnAfter(Hook)			Define
 }
 
 type Builder func(Define)
+type DependencyMatcher func(string) bool
 
 func NewMap(bs ...Builder) map[string]*Command {
 	mDefs := make(map[string]*metadataDef)
@@ -24,7 +24,7 @@ func NewMap(bs ...Builder) map[string]*Command {
 	for _, b := range bs {
 		mDef := &metadataDef{
 			md: &Command{},
-			deps: []string{},
+			deps: []interface{}{},
 		}
 		b(mDef)
 		mDefs[mDef.md.Name] = mDef
@@ -32,27 +32,26 @@ func NewMap(bs ...Builder) map[string]*Command {
 
 	m := make(map[string]*Command)
 	for _, mDef := range mDefs {
-		for _, depName := range mDef.deps {
-			if isWildcard(depName) {
-				depNameRegexp, err := utils.FromWildcardToRegexp(depName)
-				if err != nil {
-					panic(err)
+		for _, depMatcher := range mDef.deps {
+			switch depMatcher.(type) {
+			case string:
+				depName := depMatcher.(string)
+				if dep, exists := mDefs[depName]; exists {
+					mDef.md.Dependencies = append(mDef.md.Dependencies, dep.md)
+				} else {
+					panic(fmt.Errorf("no such dependency %v", depName))
 				}
+			case DependencyMatcher:
+				depMatcherFn := depMatcher.(DependencyMatcher)
 				matchedOne := false
 				for mmDefName, mmDef := range mDefs {
-					if depNameRegexp.MatchString(mmDefName) {
+					if depMatcherFn(mmDefName) {
 						matchedOne = true
 						mDef.md.Dependencies = append(mDef.md.Dependencies, mmDef.md)
 					}
 				}
 				if !matchedOne {
-					panic(fmt.Errorf("no dependency matched %v", depName))
-				}
-			} else {
-				if dep, exists := mDefs[depName]; exists {
-					mDef.md.Dependencies = append(mDef.md.Dependencies, dep.md)
-				} else {
-					panic(fmt.Errorf("no such dependency %v", depName))
+					panic(fmt.Errorf("no dependency matched from %v", mDef.md.Name))
 				}
 			}
 		}
@@ -64,7 +63,7 @@ func NewMap(bs ...Builder) map[string]*Command {
 
 type metadataDef struct {
 	md   *Command
-	deps []string
+	deps []interface{}
 }
 
 func (m *metadataDef) Command(name string) Define {
@@ -82,7 +81,7 @@ func (m *metadataDef) Output(out interface{}) Define {
 	return m
 }
 
-func (m *metadataDef) Dependencies(deps ...string) Define {
+func (m *metadataDef) Dependencies(deps ...interface{}) Define {
 	m.deps = deps
 	return m
 }
