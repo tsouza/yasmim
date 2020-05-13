@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -32,12 +33,14 @@ func NewMap(bs ...Builder) map[string]*Command {
 
 	m := make(map[string]*Command)
 	for _, mDef := range mDefs {
-		for _, depMatcher := range mDef.deps {
+		order := map[string]int{}
+		for idx, depMatcher := range mDef.deps {
 			switch depMatcher.(type) {
 			case string:
 				depName := depMatcher.(string)
 				if dep, exists := mDefs[depName]; exists {
 					mDef.md.Dependencies = append(mDef.md.Dependencies, dep.md)
+					order[depName] = idx
 				} else {
 					panic(fmt.Errorf("no such dependency %v", depName))
 				}
@@ -49,6 +52,7 @@ func NewMap(bs ...Builder) map[string]*Command {
 					if depMatcherFn(mmDefName) {
 						matchedOne = true
 						mDef.md.Dependencies = append(mDef.md.Dependencies, mmDef.md)
+						order[mmDefName] = idx
 					}
 				}
 				if !matchedOne {
@@ -57,6 +61,9 @@ func NewMap(bs ...Builder) map[string]*Command {
 				break
 			}
 		}
+		sort.Slice(mDef.md.Dependencies, func(a, b int) bool {
+			return order[mDef.md.Dependencies[a].Name] > order[mDef.md.Dependencies[b].Name]
+		})
 		m[mDef.md.Name] = mDef.md
 	}
 
