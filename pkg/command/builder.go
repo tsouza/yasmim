@@ -43,7 +43,7 @@ func NewMap(bs ...Builder) map[string]*Command {
 				}
 				break
 			default:
-				depMatcherFn := depMatcher.(DependencyMatcher)
+				depMatcherFn := DependencyMatcher(depMatcher.(func(string) bool))
 				matchedOne := false
 				for mmDefName, mmDef := range mDefs {
 					if depMatcherFn(mmDefName) {
