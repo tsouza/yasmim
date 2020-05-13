@@ -10,14 +10,13 @@ type Define interface {
 	Command(string) 		Define
 	Input(interface{}) 		Define
 	Output(interface{}) 	Define
-	Dependencies(...interface{}) Define
+	Dependencies(...string) Define
 	Handler(Handler) 		Define
 	OnBefore(Hook)			Define
 	OnAfter(Hook)			Define
 }
 
 type Builder func(Define)
-type DependencyMatcher func(string) bool
 
 func NewMap(bs ...Builder) map[string]*Command {
 	mDefs := make(map[string]*metadataDef)
@@ -25,7 +24,7 @@ func NewMap(bs ...Builder) map[string]*Command {
 	for _, b := range bs {
 		mDef := &metadataDef{
 			md: &Command{},
-			deps: []interface{}{},
+			deps: []string{},
 		}
 		b(mDef)
 		mDefs[mDef.md.Name] = mDef
@@ -34,31 +33,12 @@ func NewMap(bs ...Builder) map[string]*Command {
 	m := make(map[string]*Command)
 	for _, mDef := range mDefs {
 		order := map[string]int{}
-		for idx, depMatcher := range mDef.deps {
-			switch depMatcher.(type) {
-			case string:
-				depName := depMatcher.(string)
-				if dep, exists := mDefs[depName]; exists {
-					mDef.md.Dependencies = append(mDef.md.Dependencies, dep.md)
-					order[depName] = idx
-				} else {
-					panic(fmt.Errorf("no such dependency %v", depName))
-				}
-				break
-			default:
-				depMatcherFn := DependencyMatcher(depMatcher.(func(string) bool))
-				matchedOne := false
-				for mmDefName, mmDef := range mDefs {
-					if depMatcherFn(mmDefName) {
-						matchedOne = true
-						mDef.md.Dependencies = append(mDef.md.Dependencies, mmDef.md)
-						order[mmDefName] = idx
-					}
-				}
-				if !matchedOne {
-					panic(fmt.Errorf("no dependency matched from %v", mDef.md.Name))
-				}
-				break
+		for idx, depName := range mDef.deps {
+			if dep, exists := mDefs[depName]; exists {
+				mDef.md.Dependencies = append(mDef.md.Dependencies, dep.md)
+				order[depName] = idx
+			} else {
+				panic(fmt.Errorf("no such dependency %v", depName))
 			}
 		}
 		sort.Slice(mDef.md.Dependencies, func(a, b int) bool {
@@ -72,7 +52,7 @@ func NewMap(bs ...Builder) map[string]*Command {
 
 type metadataDef struct {
 	md   *Command
-	deps []interface{}
+	deps []string
 }
 
 func (m *metadataDef) Command(name string) Define {
@@ -90,7 +70,7 @@ func (m *metadataDef) Output(out interface{}) Define {
 	return m
 }
 
-func (m *metadataDef) Dependencies(deps ...interface{}) Define {
+func (m *metadataDef) Dependencies(deps ...string) Define {
 	m.deps = deps
 	return m
 }
