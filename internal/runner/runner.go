@@ -13,14 +13,14 @@ func New(cmds map[string]*command.Command, newLogDelegate log.DelegateFactory, l
 		if cmd, exists := cmds[commandName]; exists {
 			rt := &runtime{ ctx }
 			acceptor := depthFirstAcceptor{}
-			counter := &commandCounter{rt, filter, 0}
-			retVal, err := acceptor.Accept(cmd, counter)
+			collector := &commandCollector{ rt: rt, f: filter }
+			retVal, err := acceptor.Accept(cmd, collector)
 			if err != nil || retVal == command.VisitorInterrupted {
 				return err
 			}
 			values := map[string]interface{}{}
 			listenerLogger := log.NewLogger(newLogDelegate("listener"))
-			listener.OnStart(rt, listenerLogger, counter.totalCommands)
+			listener.OnStart(rt, listenerLogger, collector.cmds)
 			if in != nil {
 				utils.FromStructToMap(in, values)
 			}
@@ -97,19 +97,19 @@ func (v *commandExecutor) VisitAfter(cmd *command.Command) error {
 	return nil
 }
 
-type commandCounter struct {
-	rt				command.Runtime
-	f				command.Filter
-	totalCommands	int
+type commandCollector struct {
+	rt 	  command.Runtime
+	f  	  command.Filter
+	cmds  []*command.Command
 }
 
-func (v *commandCounter) VisitBefore(cmd *command.Command) command.VisitorReturnCode {
+func (v *commandCollector) VisitBefore(cmd *command.Command) command.VisitorReturnCode {
 	return doCallVisitor(v.rt, v.f, cmd, func() {
-		v.totalCommands++
+		v.cmds = append([]*command.Command{ cmd }, v.cmds...)
 	})
 }
 
-func (v *commandCounter) VisitAfter(_ *command.Command) error { return nil }
+func (v *commandCollector) VisitAfter(_ *command.Command) error { return nil }
 
 func doCallVisitor(rt command.Runtime, f command.Filter, cmd *command.Command, v func()) command.VisitorReturnCode {
 	if rt.Interrupted() {

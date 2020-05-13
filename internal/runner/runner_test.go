@@ -109,8 +109,10 @@ func TestRun_Listener(t *testing.T) {
 	listenerMethodCallCount := map[string]int{}
 	var commandCallOrder []string
 	l := &testListener{
-		assertOnStart: func(totalCommandsToExecute int) {
-			assert.Equal(t, len(cmds), totalCommandsToExecute)
+		assertOnStart: func(executionSequence []*command.Command) {
+			assert.Equal(t, fmt.Sprintf("%v", map[string]string{
+				"test-2": "test-2", "test-1": "test-1" }),
+				fmt.Sprintf("%v", cmds))
 			listenerMethodCallCount["start"]++
 		},
 		assertOnBeforeCommand: func(commandName string) {
@@ -148,14 +150,14 @@ func newCmds(cmds map[string]*command.Command) command.Runner {
 }
 
 type testListener struct {
-	assertOnStart 		   func(int)
+	assertOnStart 		   func([]*command.Command)
 	assertOnBeforeCommand  func(string)
 	assertOnAfterCommand   func(string)
 	assertOnFinish		   func()
 }
 
-func (l *testListener) OnStart(rt command.Runtime, log *log.Logger, totalCommandsToExecute int) {
-	l.assertOnStart(totalCommandsToExecute)
+func (l *testListener) OnStart(rt command.Runtime, log *log.Logger, executionSequence []*command.Command) {
+	l.assertOnStart(executionSequence)
 }
 func (l *testListener) OnBeforeCommand(rt command.Runtime, log *log.Logger, commandName string, values map[string]interface{}) {
 	l.assertOnBeforeCommand(commandName)
