@@ -28,12 +28,11 @@ func Listener(l command.Listener) Option {
 	}
 }
 
-func Excludes(wildcards ...string) Option {
-	r := compileWildcards(wildcards)
+func Excludes(commands ...string) Option {
 	return func(c *Configuration) {
 		c.Filter = func(cmd *command.Command) bool {
-			for _, reg := range r {
-				if reg.MatchString(cmd.Name) {
+			for _, cmdName := range commands {
+				if cmdName == cmd.Name {
 					return false
 				}
 			}
