@@ -39,10 +39,10 @@ func NewMap(bs ...Builder) map[string]*Command {
 					panic(err)
 				}
 				matchedOne := false
-				for mDefName, mDef := range mDefs {
-					if depNameRegexp.MatchString(mDefName) {
+				for mmDefName, mmDef := range mDefs {
+					if depNameRegexp.MatchString(mmDefName) {
 						matchedOne = true
-						mDef.md.Dependencies = append(mDef.md.Dependencies, mDef.md)
+						mDef.md.Dependencies = append(mDef.md.Dependencies, mmDef.md)
 					}
 				}
 				if !matchedOne {
