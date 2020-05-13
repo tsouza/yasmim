@@ -8,7 +8,7 @@ import (
 	"github.com/tsouza/yasmim/pkg/option"
 )
 
-var commands []command.Builder
+var commands 	   []command.Builder
 
 func Register(builder command.Builder) {
 	commands = append(commands, builder)

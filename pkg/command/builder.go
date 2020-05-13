@@ -3,7 +3,6 @@ package command
 import (
 	"fmt"
 	"sort"
-	"strings"
 )
 
 type Define interface {
@@ -11,6 +10,7 @@ type Define interface {
 	Input(interface{}) 		Define
 	Output(interface{}) 	Define
 	Dependencies(...string) Define
+	SetAsGlobalDependency() Define
 	Handler(Handler) 		Define
 	OnBefore(Hook)			Define
 	OnAfter(Hook)			Define
@@ -20,6 +20,7 @@ type Builder func(Define)
 
 func NewMap(bs ...Builder) map[string]*Command {
 	mDefs := make(map[string]*metadataDef)
+	var gDepDefs []string
 
 	for _, b := range bs {
 		mDef := &metadataDef{
@@ -28,6 +29,17 @@ func NewMap(bs ...Builder) map[string]*Command {
 		}
 		b(mDef)
 		mDefs[mDef.md.Name] = mDef
+		if mDef.md.GlobalDependency {
+			gDepDefs = append(gDepDefs, mDef.md.Name)
+		}
+	}
+
+	if len(gDepDefs) > 0 {
+		for _, mDef := range mDefs {
+			if !mDef.md.GlobalDependency {
+				mDef.deps = append(gDepDefs, mDef.deps...)
+			}
+		}
 	}
 
 	m := make(map[string]*Command)
@@ -75,6 +87,11 @@ func (m *metadataDef) Dependencies(deps ...string) Define {
 	return m
 }
 
+func (m *metadataDef) SetAsGlobalDependency() Define {
+	m.md.GlobalDependency = true
+	return m
+}
+
 func (m *metadataDef) Handler(handler Handler) Define {
 	m.md.Handler = handler
 	return m
@@ -88,9 +105,4 @@ func (m *metadataDef) OnBefore(hook Hook) Define {
 func (m *metadataDef) OnAfter(hook Hook) Define {
 	m.md.OnAfter = hook
 	return m
-}
-
-
-func isWildcard(name string) bool {
-	return strings.Contains(name, "*")
 }

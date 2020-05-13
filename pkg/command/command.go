@@ -16,6 +16,8 @@ type Command struct {
 	OnBefore	 Hook
 	OnAfter		 Hook
 	Handler		 Handler
+
+	GlobalDependency bool
 }
 
 func (c *Command) String() string {
