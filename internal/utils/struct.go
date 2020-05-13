@@ -31,13 +31,3 @@ func NewStructFrom(s interface{}) interface{} {
 	}
 	return reflect.New(t).Interface()
 }
-/*
-func CopyValues(from interface{}, to interface{}) error {
-	fromValue := reflect.ValueOf(from)
-	toValue := reflect.ValueOf(to)
-
-	for i := 0; i < toValue.NumField(); i++ {
-
-	}
-	return nil
-}*/
