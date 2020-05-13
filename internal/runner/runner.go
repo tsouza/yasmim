@@ -70,7 +70,7 @@ type commandExecutor struct {
 
 func (v *commandExecutor) VisitBefore(cmd *command.Command) command.VisitorReturnCode {
 	return doCallVisitor(v.rt, v.f, cmd, func() {
-		v.listener.OnBeforeCommand(v.rt, v.listenerLogger, cmd.Name, v.values)
+		v.listener.OnBeforeCommand(v.rt, v.listenerLogger, cmd, v.values)
 	})
 }
 
@@ -93,7 +93,7 @@ func (v *commandExecutor) VisitAfter(cmd *command.Command) error {
 			utils.FromStructToMap(out, v.values)
 		}
 	}
-	v.listener.OnAfterCommand(v.rt, v.listenerLogger, cmd.Name, v.values)
+	v.listener.OnAfterCommand(v.rt, v.listenerLogger, cmd, v.values)
 	return nil
 }
 

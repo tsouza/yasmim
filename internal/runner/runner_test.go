@@ -115,13 +115,13 @@ func TestRun_Listener(t *testing.T) {
 				fmt.Sprintf("%v", cmds))
 			listenerMethodCallCount["start"]++
 		},
-		assertOnBeforeCommand: func(commandName string) {
-			callName := fmt.Sprintf("before-%v", commandName)
+		assertOnBeforeCommand: func(cmd *command.Command) {
+			callName := fmt.Sprintf("before-%v", cmd)
 			commandCallOrder = append(commandCallOrder, callName)
 			listenerMethodCallCount[callName]++
 		},
-		assertOnAfterCommand: func(commandName string) {
-			callName := fmt.Sprintf("after-%v", commandName)
+		assertOnAfterCommand: func(cmd *command.Command) {
+			callName := fmt.Sprintf("after-%v", cmd)
 			commandCallOrder = append(commandCallOrder, callName)
 			listenerMethodCallCount[callName]++
 		},
@@ -151,19 +151,19 @@ func newCmds(cmds map[string]*command.Command) command.Runner {
 
 type testListener struct {
 	assertOnStart 		   func([]*command.Command)
-	assertOnBeforeCommand  func(string)
-	assertOnAfterCommand   func(string)
+	assertOnBeforeCommand  func(*command.Command)
+	assertOnAfterCommand   func(*command.Command)
 	assertOnFinish		   func()
 }
 
 func (l *testListener) OnStart(rt command.Runtime, log *log.Logger, executionSequence []*command.Command) {
 	l.assertOnStart(executionSequence)
 }
-func (l *testListener) OnBeforeCommand(rt command.Runtime, log *log.Logger, commandName string, values map[string]interface{}) {
-	l.assertOnBeforeCommand(commandName)
+func (l *testListener) OnBeforeCommand(rt command.Runtime, log *log.Logger, cmd *command.Command, values map[string]interface{}) {
+	l.assertOnBeforeCommand(cmd)
 }
-func (l *testListener) OnAfterCommand(rt command.Runtime, log *log.Logger, commandName string, values map[string]interface{}) {
-	l.assertOnAfterCommand(commandName)
+func (l *testListener) OnAfterCommand(rt command.Runtime, log *log.Logger, cmd *command.Command, values map[string]interface{}) {
+	l.assertOnAfterCommand(cmd)
 }
 func (l *testListener) OnFinish(rt command.Runtime, log *log.Logger, values map[string]interface{}, err error, interrupted bool) {
 	l.assertOnFinish()

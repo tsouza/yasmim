@@ -30,16 +30,16 @@ type Filter func(*Command) bool
 
 type Listener interface {
 	OnStart(rt Runtime, log *log.Logger, executionSequence []*Command)
-	OnBeforeCommand(rt Runtime, log *log.Logger, commandName string, values map[string]interface{})
-	OnAfterCommand(rt Runtime, log *log.Logger,commandName string, values map[string]interface{})
+	OnBeforeCommand(rt Runtime, log *log.Logger, cmd *Command, values map[string]interface{})
+	OnAfterCommand(rt Runtime, log *log.Logger, cmd *Command, values map[string]interface{})
 	OnFinish(rt Runtime, log *log.Logger, values map[string]interface{}, err error, interrupted bool)
 }
 
 type NoOpListener struct {}
 var _ Listener = (*NoOpListener)(nil)
 func (l *NoOpListener) OnStart(_ Runtime, _ *log.Logger, _ []*Command) {}
-func (l *NoOpListener) OnBeforeCommand(_ Runtime, _ *log.Logger, _ string, _ map[string]interface{}) {}
-func (l *NoOpListener) OnAfterCommand(_ Runtime, _ *log.Logger, _ string, _ map[string]interface{}) {}
+func (l *NoOpListener) OnBeforeCommand(_ Runtime, _ *log.Logger, _ *Command, _ map[string]interface{}) {}
+func (l *NoOpListener) OnAfterCommand(_ Runtime, _ *log.Logger, _ *Command, _ map[string]interface{}) {}
 func (l *NoOpListener) OnFinish(_ Runtime, _ *log.Logger, _ map[string]interface{}, _ error, _ bool) {}
 
 func NoOpHandler(_ Runtime, _ *log.Logger, _, _ interface{}) error { return nil }
