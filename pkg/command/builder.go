@@ -42,7 +42,7 @@ func NewMap(bs ...Builder) map[string]*Command {
 			}
 		}
 		sort.Slice(mDef.md.Dependencies, func(a, b int) bool {
-			return order[mDef.md.Dependencies[a].Name] > order[mDef.md.Dependencies[b].Name]
+			return order[mDef.md.Dependencies[a].Name] < order[mDef.md.Dependencies[b].Name]
 		})
 		m[mDef.md.Name] = mDef.md
 	}
