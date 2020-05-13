@@ -1,6 +1,10 @@
 package command
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/tsouza/yasmim/internal/utils"
+	"strings"
+)
 
 type Define interface {
 	Command(string) 		Define
@@ -29,10 +33,27 @@ func NewMap(bs ...Builder) map[string]*Command {
 	m := make(map[string]*Command)
 	for _, mDef := range mDefs {
 		for _, depName := range mDef.deps {
-			if dep, exists := mDefs[depName]; exists {
-				mDef.md.Dependencies = append(mDef.md.Dependencies, dep.md)
+			if isWildcard(depName) {
+				depNameRegexp, err := utils.FromWildcardToRegexp(depName)
+				if err != nil {
+					panic(err)
+				}
+				matchedOne := false
+				for mDefName, mDef := range mDefs {
+					if depNameRegexp.MatchString(mDefName) {
+						matchedOne = true
+						mDef.md.Dependencies = append(mDef.md.Dependencies, mDef.md)
+					}
+				}
+				if !matchedOne {
+					panic(fmt.Errorf("no dependency matched %v", depName))
+				}
 			} else {
-				panic(fmt.Errorf("no such dependency %v", depName))
+				if dep, exists := mDefs[depName]; exists {
+					mDef.md.Dependencies = append(mDef.md.Dependencies, dep.md)
+				} else {
+					panic(fmt.Errorf("no such dependency %v", depName))
+				}
 			}
 		}
 		m[mDef.md.Name] = mDef.md
@@ -81,3 +102,7 @@ func (m *metadataDef) OnAfter(hook Hook) Define {
 	return m
 }
 
+
+func isWildcard(name string) bool {
+	return strings.Contains(name, "*")
+}
