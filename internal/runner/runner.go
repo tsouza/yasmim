@@ -85,7 +85,19 @@ func (v *commandExecutor) VisitAfter(cmd *command.Command) error {
 		if cmd.Output != nil {
 			out = utils.NewStructFrom(cmd.Output)
 		}
+		if cmd.OnBefore != nil {
+			err := cmd.OnBefore()
+			if err != nil {
+				return err
+			}
+		}
 		err := cmd.Handler(v.rt, logger, in, out)
+		if cmd.OnAfter != nil {
+			err := cmd.OnAfter()
+			if err != nil {
+				return err
+			}
+		}
 		if err != nil {
 			return err
 		}

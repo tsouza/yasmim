@@ -16,12 +16,6 @@ func (df *depthFirstAcceptor) accept(cmd *command.Command, v command.Visitor) (c
 		return command.VisitorContinue, nil
 	}
 	df.visited[cmd.Name] = true
-	if cmd.OnBefore != nil {
-		err := cmd.OnBefore()
-		if err != nil {
-			return -1, err
-		}
-	}
 	retVal := v.VisitBefore(cmd)
 	if retVal >= command.VisitorStop {
 		return retVal, nil
@@ -32,15 +26,5 @@ func (df *depthFirstAcceptor) accept(cmd *command.Command, v command.Visitor) (c
 			return retVal, err
 		}
 	}
-	err := v.VisitAfter(cmd)
-	if err != nil {
-		return -1, err
-	}
-	if cmd.OnAfter != nil {
-		err := cmd.OnAfter()
-		if err != nil {
-			return -1, err
-		}
-	}
-	return command.VisitorContinue, nil
+	return command.VisitorContinue, v.VisitAfter(cmd)
 }
