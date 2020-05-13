@@ -6,12 +6,15 @@ import (
 )
 
 type Handler func(rt Runtime, log *log.Logger, in, out interface{}) error
+type Hook func() error
 
 type Command struct {
 	Name 		 string
 	Input   	 interface{}
 	Output		 interface{}
 	Dependencies []*Command
+	OnBefore	 Hook
+	OnAfter		 Hook
 	Handler		 Handler
 }
 

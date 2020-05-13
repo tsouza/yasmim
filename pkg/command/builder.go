@@ -8,6 +8,8 @@ type Define interface {
 	Output(interface{}) 	Define
 	Dependencies(...string) Define
 	Handler(Handler) 		Define
+	OnBefore(Hook)		Define
+	OnAfter(Hook)		Define
 }
 
 type Builder func(Define)
@@ -66,6 +68,16 @@ func (m *metadataDef) Dependencies(deps ...string) Define {
 
 func (m *metadataDef) Handler(handler Handler) Define {
 	m.md.Handler = handler
+	return m
+}
+
+func (m *metadataDef) OnBefore(hook Hook) Define {
+	m.md.OnBefore = hook
+	return m
+}
+
+func (m *metadataDef) OnAfter(hook Hook) Define {
+	m.md.OnAfter = hook
 	return m
 }
 
