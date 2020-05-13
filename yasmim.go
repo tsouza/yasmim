@@ -26,6 +26,7 @@ func New() Runner {
 }
 
 type Runner interface {
+	Commands() map[string]*command.Command
 	With(opts ...option.Option) Runner
 	Run(command string, in, out interface{}) error
 }
@@ -33,6 +34,10 @@ type Runner interface {
 type builder struct {
 	cfg  *option.Configuration
 	cmds map[string]*command.Command
+}
+
+func (b *builder) Commands() map[string]*command.Command {
+	return b.cmds
 }
 
 func (b *builder) With(opts ...option.Option) Runner {
