@@ -41,7 +41,8 @@ func NewMap(bs ...Builder) map[string]*Command {
 				} else {
 					panic(fmt.Errorf("no such dependency %v", depName))
 				}
-			case DependencyMatcher:
+				break
+			default:
 				depMatcherFn := depMatcher.(DependencyMatcher)
 				matchedOne := false
 				for mmDefName, mmDef := range mDefs {
@@ -53,6 +54,7 @@ func NewMap(bs ...Builder) map[string]*Command {
 				if !matchedOne {
 					panic(fmt.Errorf("no dependency matched from %v", mDef.md.Name))
 				}
+				break
 			}
 		}
 		m[mDef.md.Name] = mDef.md
