@@ -2,6 +2,8 @@ package command
 
 import (
 	"fmt"
+	"github.com/tsouza/yasmim/internal/utils"
+	"regexp"
 	"sort"
 )
 
@@ -10,7 +12,7 @@ type Define interface {
 	Input(interface{}) 		Define
 	Output(interface{}) 	Define
 	Dependencies(...string) Define
-	SetAsGlobalDependency() Define
+	DependencyOf(...string) Define
 	Handler(Handler) 		Define
 	OnBefore(Hook)			Define
 	OnAfter(Hook)			Define
@@ -20,7 +22,7 @@ type Builder func(Define)
 
 func NewMap(bs ...Builder) map[string]*Command {
 	mDefs := make(map[string]*metadataDef)
-	var gDepDefs []string
+	var gDepDefs []*Command
 
 	for _, b := range bs {
 		mDef := &metadataDef{
@@ -29,15 +31,21 @@ func NewMap(bs ...Builder) map[string]*Command {
 		}
 		b(mDef)
 		mDefs[mDef.md.Name] = mDef
-		if mDef.md.GlobalDependency {
-			gDepDefs = append(gDepDefs, mDef.md.Name)
+		if len(mDef.md.DependencyOf) > 0 {
+			gDepDefs = append(gDepDefs, mDef.md)
 		}
 	}
 
 	if len(gDepDefs) > 0 {
 		for _, mDef := range mDefs {
-			if !mDef.md.GlobalDependency {
-				mDef.deps = append(gDepDefs, mDef.deps...)
+			if len(mDef.md.DependencyOf) == 0 {
+				for _, gDepDef := range gDepDefs {
+					for _, r := range gDepDef.DependencyOf {
+						if r.MatchString(mDef.md.Name) {
+							mDef.deps = append([]string{ gDepDef.Name }, mDef.deps...)
+						}
+					}
+				}
 			}
 		}
 	}
@@ -87,8 +95,16 @@ func (m *metadataDef) Dependencies(deps ...string) Define {
 	return m
 }
 
-func (m *metadataDef) SetAsGlobalDependency() Define {
-	m.md.GlobalDependency = true
+func (m *metadataDef) DependencyOf(deps ...string) Define {
+	var depsR []*regexp.Regexp
+	for _, dep := range deps {
+		depR, err := utils.FromWildcardToRegexp(dep)
+		if err != nil {
+			panic(err)
+		}
+		depsR = append(depsR, depR)
+	}
+	m.md.DependencyOf = depsR
 	return m
 }
 

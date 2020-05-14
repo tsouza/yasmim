@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"github.com/tsouza/yasmim/pkg/log"
+	"regexp"
 )
 
 type Handler func(rt Runtime, log *log.Logger, in, out interface{}) error
@@ -17,7 +18,7 @@ type Command struct {
 	OnAfter		 Hook
 	Handler		 Handler
 
-	GlobalDependency bool
+	DependencyOf []*regexp.Regexp
 }
 
 func (c *Command) String() string {
