@@ -11,6 +11,7 @@ type Hook func() error
 
 type Command struct {
 	Name 		 string
+	Description	 string
 	Input   	 interface{}
 	Output		 interface{}
 	Dependencies []*Command

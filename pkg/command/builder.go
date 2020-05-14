@@ -9,6 +9,7 @@ import (
 
 type Define interface {
 	Command(string) 		Define
+	Description(string)		Define
 	Input(interface{}) 		Define
 	Output(interface{}) 	Define
 	Dependencies(...string) Define
@@ -77,6 +78,11 @@ type metadataDef struct {
 
 func (m *metadataDef) Command(name string) Define {
 	m.md.Name = name
+	return m
+}
+
+func (m *metadataDef) Description(description string) Define {
+	m.md.Description = description
 	return m
 }
 
