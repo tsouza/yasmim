@@ -2,7 +2,9 @@ package yasmim
 
 import (
 	"context"
+	"fmt"
 	"github.com/tsouza/yasmim/internal/runner"
+	"github.com/tsouza/yasmim/internal/utils"
 	"github.com/tsouza/yasmim/pkg/command"
 	"github.com/tsouza/yasmim/pkg/log"
 	"github.com/tsouza/yasmim/pkg/option"
@@ -14,21 +16,22 @@ func Register(builder command.Builder) {
 	commands = append(commands, builder)
 }
 
-func newRunner(seq ...command.Builder) Runner {
+func newRunner(seq ...command.Builder) Yasmim {
 	cmds := command.NewMap(seq...)
 	return &builder{&option.Configuration{}, cmds }
 }
 
-func New() Runner {
+func New() Yasmim {
 	cmds := commands
 	commands = nil
 	return newRunner(cmds...)
 }
 
-type Runner interface {
+type Yasmim interface {
 	Commands() map[string]*command.Command
-	With(opts ...option.Option) Runner
+	With(opts ...option.Option) Yasmim
 	Run(command string, in, out interface{}) error
+	Accept(visitor command.Visitor, commandName string) error
 }
 
 type builder struct {
@@ -40,12 +43,23 @@ func (b *builder) Commands() map[string]*command.Command {
 	return b.cmds
 }
 
-func (b *builder) With(opts ...option.Option) Runner {
+func (b *builder) With(opts ...option.Option) Yasmim {
 	for _, opt := range opts {
 		opt(b.cfg)
 	}
 	return b
 }
+
+
+func (b *builder) Accept(visitor command.Visitor, commandName string) error {
+	if cmd, exists := b.cmds[commandName]; exists {
+		acceptor := utils.DepthFirstAcceptor{}
+		_, err := acceptor.Accept(cmd, visitor)
+		return err
+	}
+	return fmt.Errorf("no such command %v", commandName)
+}
+
 
 func (b *builder) Run(command string, in, out interface{}) error {
 	b.applyDefaults()

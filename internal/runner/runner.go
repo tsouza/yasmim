@@ -12,7 +12,7 @@ func New(cmds map[string]*command.Command, newLogDelegate log.DelegateFactory, l
 	return func(ctx context.Context, commandName string, in interface{}, out interface{}) error {
 		if cmd, exists := cmds[commandName]; exists {
 			rt := &runtime{ ctx }
-			acceptor := depthFirstAcceptor{}
+			acceptor := utils.DepthFirstAcceptor{}
 			collector := &commandCollector{ rt: rt, f: filter }
 			retVal, err := acceptor.Accept(cmd, collector)
 			if err != nil || retVal == command.VisitorInterrupted {

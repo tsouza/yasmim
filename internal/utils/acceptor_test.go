@@ -1,4 +1,4 @@
-package runner
+package utils
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ func TestDepthFirstAcceptor_Accept_Simple(t *testing.T) {
 		},
 	)
 
-	testAcceptor := depthFirstAcceptor{}
+	testAcceptor := DepthFirstAcceptor{}
 	testVisitor := &visitListBuilder{}
 
 	test1 := cmds["test-1"]
@@ -51,7 +51,7 @@ func TestDepthFirstAcceptor_Accept_Revisit(t *testing.T) {
 		},
 	)
 
-	testAcceptor := depthFirstAcceptor{}
+	testAcceptor := DepthFirstAcceptor{}
 	testVisitor := &visitListBuilder{}
 
 	test1 := cmds["test-1"]
@@ -81,7 +81,7 @@ func TestDepthFirstAcceptor_Accept_Cycle(t *testing.T) {
 		},
 	)
 
-	testAcceptor := depthFirstAcceptor{}
+	testAcceptor := DepthFirstAcceptor{}
 	testVisitor := &visitListBuilder{}
 
 	test1 := cmds["test-1"]

@@ -1,17 +1,17 @@
-package runner
+package utils
 
 import "github.com/tsouza/yasmim/pkg/command"
 
-type depthFirstAcceptor struct {
+type DepthFirstAcceptor struct {
 	visited map[string]bool
 }
 
-func (df *depthFirstAcceptor) Accept(cmd *command.Command, v command.Visitor) (command.VisitorReturnCode, error) {
+func (df *DepthFirstAcceptor) Accept(cmd *command.Command, v command.Visitor) (command.VisitorReturnCode, error) {
 	df.visited = map[string]bool{}
 	return df.accept(cmd, v)
 }
 
-func (df *depthFirstAcceptor) accept(cmd *command.Command, v command.Visitor) (command.VisitorReturnCode, error)  {
+func (df *DepthFirstAcceptor) accept(cmd *command.Command, v command.Visitor) (command.VisitorReturnCode, error)  {
 	if _, exists := df.visited[cmd.Name]; exists {
 		return command.VisitorContinue, nil
 	}
