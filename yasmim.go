@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/tsouza/yasmim/internal/runner"
-	"github.com/tsouza/yasmim/internal/utils"
+	acceptor2 "github.com/tsouza/yasmim/internal/utils/acceptor"
 	"github.com/tsouza/yasmim/pkg/command"
 	"github.com/tsouza/yasmim/pkg/log"
 	"github.com/tsouza/yasmim/pkg/option"
@@ -53,7 +53,7 @@ func (b *builder) With(opts ...option.Option) Yasmim {
 
 func (b *builder) Accept(visitor command.Visitor, commandName string) error {
 	if cmd, exists := b.cmds[commandName]; exists {
-		acceptor := utils.DepthFirstAcceptor{}
+		acceptor := acceptor2.DepthFirstAcceptor{}
 		_, err := acceptor.Accept(cmd, visitor)
 		return err
 	}

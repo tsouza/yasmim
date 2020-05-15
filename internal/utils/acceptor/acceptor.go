@@ -1,4 +1,4 @@
-package utils
+package acceptor
 
 import "github.com/tsouza/yasmim/pkg/command"
 
