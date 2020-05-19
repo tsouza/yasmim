@@ -1,5 +1,7 @@
 # Yasmim [WIP]
 
+[![Build Status via Travis CI](https://travis-ci.org/tsouza/yasmim.svg?branch=master)](https://travis-ci.org/tsouza/yasmim)
+
 `yasmim` is a golang library that helps to implement chain of responsibility design pattern.
 
 ## Installation
