@@ -1,0 +1,7 @@
+language: go
+go:
+  - "1.14"
+before_install:
+  - go mod download
+script:
+  - go test -v -covermode=count -coverprofile=coverage.out ./...
