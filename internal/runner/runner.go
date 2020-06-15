@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/tsouza/yasmim/internal/utils"
-	acceptor2 "github.com/tsouza/yasmim/internal/utils/acceptor"
+	"github.com/tsouza/yasmim/internal/utils/acceptor"
 	"github.com/tsouza/yasmim/pkg/command"
 	"github.com/tsouza/yasmim/pkg/log"
 )
@@ -13,9 +13,9 @@ func New(cmds map[string]*command.Command, newLogDelegate log.DelegateFactory, l
 	return func(ctx context.Context, commandName string, in interface{}, out interface{}) error {
 		if cmd, exists := cmds[commandName]; exists {
 			rt := &runtime{ ctx }
-			acceptor := acceptor2.DepthFirstAcceptor{}
+			a := acceptor.DepthFirstAcceptor{}
 			collector := &commandInitializer{ rt: rt, f: filter }
-			retVal, err := acceptor.Accept(cmd, collector)
+			retVal, err := a.Accept(cmd, collector)
 			if err != nil || retVal == command.VisitorInterrupted {
 				return err
 			}
@@ -33,7 +33,7 @@ func New(cmds map[string]*command.Command, newLogDelegate log.DelegateFactory, l
 				newLogDelegate: newLogDelegate,
 				values:         values,
 			}
-			retVal, err = acceptor.Accept(cmd, executor)
+			retVal, err = a.Accept(cmd, executor)
 			if err != nil || retVal >= command.VisitorStop {
 				listener.OnFinish(rt, listenerLogger, values, err, retVal == command.VisitorInterrupted)
 				return err
