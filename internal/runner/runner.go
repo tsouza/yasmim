@@ -14,7 +14,7 @@ func New(cmds map[string]*command.Command, newLogDelegate log.DelegateFactory, l
 		if cmd, exists := cmds[commandName]; exists {
 			rt := &runtime{ ctx }
 			acceptor := acceptor2.DepthFirstAcceptor{}
-			collector := &commandCollector{ rt: rt, f: filter }
+			collector := &commandInitializer{ rt: rt, f: filter }
 			retVal, err := acceptor.Accept(cmd, collector)
 			if err != nil || retVal == command.VisitorInterrupted {
 				return err
@@ -110,19 +110,24 @@ func (v *commandExecutor) VisitAfter(cmd *command.Command) error {
 	return nil
 }
 
-type commandCollector struct {
+type commandInitializer struct {
 	rt 	  command.Runtime
 	f  	  command.Filter
 	cmds  []*command.Command
 }
 
-func (v *commandCollector) VisitBefore(cmd *command.Command) command.VisitorReturnCode {
+func (v *commandInitializer) VisitBefore(cmd *command.Command) command.VisitorReturnCode {
 	return doCallVisitor(v.rt, v.f, cmd, func() {
 		v.cmds = append([]*command.Command{ cmd }, v.cmds...)
 	})
 }
 
-func (v *commandCollector) VisitAfter(_ *command.Command) error { return nil }
+func (v *commandInitializer) VisitAfter(cmd *command.Command) error {
+	if cmd.Init != nil {
+		return cmd.Init()
+	}
+	return nil
+}
 
 func doCallVisitor(rt command.Runtime, f command.Filter, cmd *command.Command, v func()) command.VisitorReturnCode {
 	if rt.Interrupted() {

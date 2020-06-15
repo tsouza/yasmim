@@ -17,6 +17,7 @@ type Command struct {
 	Dependencies []*Command
 	OnBefore	 Hook
 	OnAfter		 Hook
+	Init		 Hook
 	Handler		 Handler
 
 	DependencyOf []*regexp.Regexp

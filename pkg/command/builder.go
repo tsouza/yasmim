@@ -15,6 +15,7 @@ type Define interface {
 	Dependencies(...string) Define
 	DependencyOf(...string) Define
 	Handler(Handler) 		Define
+	Init(Hook) 				Define
 	OnBefore(Hook)			Define
 	OnAfter(Hook)			Define
 }
@@ -116,6 +117,11 @@ func (m *metadataDef) DependencyOf(deps ...string) Define {
 
 func (m *metadataDef) Handler(handler Handler) Define {
 	m.md.Handler = handler
+	return m
+}
+
+func (m *metadataDef) Init(init Hook) Define {
+	m.md.Init = init
 	return m
 }
 
