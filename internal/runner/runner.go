@@ -118,16 +118,17 @@ type commandInitializer struct {
 
 func (v *commandInitializer) VisitBefore(cmd *command.Command) command.VisitorReturnCode {
 	return doCallVisitor(v.rt, v.f, cmd, func() {
+		if cmd.Init != nil {
+			err := cmd.Init()
+			if err != nil {
+				panic(err)
+			}
+		}
 		v.cmds = append([]*command.Command{ cmd }, v.cmds...)
 	})
 }
 
-func (v *commandInitializer) VisitAfter(cmd *command.Command) error {
-	if cmd.Init != nil {
-		return cmd.Init()
-	}
-	return nil
-}
+func (v *commandInitializer) VisitAfter(_ *command.Command) error { return nil }
 
 func doCallVisitor(rt command.Runtime, f command.Filter, cmd *command.Command, v func()) command.VisitorReturnCode {
 	if rt.Interrupted() {
