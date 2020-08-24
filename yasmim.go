@@ -22,9 +22,7 @@ func newRunner(seq ...command.Builder) Yasmim {
 }
 
 func New() Yasmim {
-	cmds := commands
-	commands = nil
-	return newRunner(cmds...)
+	return newRunner(commands...)
 }
 
 type Yasmim interface {
